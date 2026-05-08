@@ -1,0 +1,132 @@
+<!doctype html>
+<html lang="pt-br">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Jarjour Market Intelligence</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/htmx.org@1.9.12"></script>
+  </head>
+  <body class="bg-[#f7f4ef] text-zinc-900">
+    <main class="mx-auto max-w-7xl px-5 py-8 sm:px-8 lg:py-10">
+      <header class="mb-8 border-b border-zinc-200 pb-8">
+        <div class="flex flex-col gap-6 lg:flex-row lg:items-end lg:justify-between">
+          <div class="max-w-3xl">
+            <p class="text-xs font-semibold uppercase tracking-[0.18em] text-amber-700">Pioneirismo. Coragem. Trabalho.</p>
+            <h1 class="mt-3 text-4xl font-semibold tracking-normal text-zinc-950">Jarjour Market Intelligence</h1>
+            <p class="mt-3 max-w-2xl text-base leading-7 text-zinc-600">
+              Leitura executiva do mercado imobiliário para apoiar decisões de locação, negociação e oportunidade.
+            </p>
+          </div>
+          <a href="/api/v1/exports/carol-xlsx" class="inline-flex w-fit items-center justify-center rounded-md bg-zinc-950 px-5 py-3 text-sm font-semibold text-white shadow-sm transition hover:bg-zinc-800">
+            Exportar Excel Carol
+          </a>
+        </div>
+      </header>
+
+      <section class="mb-8 rounded-lg border border-zinc-200 bg-white/80 p-5 shadow-sm">
+        <div class="mb-4 flex flex-col gap-1">
+          <h2 class="text-sm font-semibold uppercase tracking-[0.14em] text-zinc-700">Filtros da pesquisa</h2>
+          <p class="text-sm text-zinc-500">Refine a tabela de imóveis normalizados sem alterar os totais preservados da coleta.</p>
+        </div>
+        <form
+          class="grid gap-3 lg:grid-cols-[1fr_1fr_1fr_1fr_auto_auto]"
+          hx-get="{% url 'dashboard:table' %}"
+          hx-target="#listings-table"
+          hx-trigger="submit, change delay:150ms"
+        >
+          <select name="bairro" class="h-11 rounded-md border border-zinc-300 bg-white px-3 text-sm text-zinc-800 shadow-sm">
+            <option value="">Todos os bairros</option>
+            {% for bairro in bairros %}<option value="{{ bairro }}">{{ bairro }}</option>{% endfor %}
+          </select>
+          <select name="tipo_imovel" class="h-11 rounded-md border border-zinc-300 bg-white px-3 text-sm text-zinc-800 shadow-sm">
+            <option value="">Todos os tipos</option>
+            {% for tipo in tipos %}<option value="{{ tipo }}">{{ tipo }}</option>{% endfor %}
+          </select>
+          <select name="finalidade" class="h-11 rounded-md border border-zinc-300 bg-white px-3 text-sm text-zinc-800 shadow-sm">
+            <option value="">Todas as finalidades</option>
+            {% for finalidade in finalidades %}<option value="{{ finalidade }}">{{ finalidade }}</option>{% endfor %}
+          </select>
+          <select name="confidence_status" class="h-11 rounded-md border border-zinc-300 bg-white px-3 text-sm text-zinc-800 shadow-sm">
+            <option value="">Todos os status</option>
+            {% for value,label in statuses %}<option value="{{ value }}">{{ label }}</option>{% endfor %}
+          </select>
+          <button type="submit" class="h-11 rounded-md bg-zinc-900 px-4 text-sm font-semibold text-white transition hover:bg-zinc-700">Filtrar</button>
+          <a href="{% url 'dashboard:index' %}" class="inline-flex h-11 items-center justify-center rounded-md border border-zinc-300 bg-white px-4 text-sm font-semibold text-zinc-700 transition hover:bg-zinc-50">Limpar</a>
+        </form>
+      </section>
+
+      <section class="mb-6 grid gap-3 sm:grid-cols-2 lg:grid-cols-7">
+        <div class="rounded-lg border border-zinc-200 bg-white p-4 shadow-sm">
+          <p class="text-xs font-semibold uppercase tracking-wide text-zinc-500">Anúncios coletados</p>
+          <p class="mt-3 text-3xl font-semibold text-zinc-950">{{ summary.total_raw_collected }}</p>
+        </div>
+        <div class="rounded-lg border border-zinc-200 bg-white p-4 shadow-sm">
+          <p class="text-xs font-semibold uppercase tracking-wide text-zinc-500">Normalizados</p>
+          <p class="mt-3 text-3xl font-semibold text-zinc-950">{{ summary.total_normalized }}</p>
+        </div>
+        <div class="rounded-lg border border-amber-200 bg-amber-50 p-4 shadow-sm">
+          <p class="text-xs font-semibold uppercase tracking-wide text-amber-800">Brutos sem normalização</p>
+          <p class="mt-3 text-3xl font-semibold text-amber-950">{{ summary.total_raw_without_listing }}</p>
+        </div>
+        <div class="rounded-lg border border-zinc-200 bg-white p-4 shadow-sm">
+          <p class="text-xs font-semibold uppercase tracking-wide text-zinc-500">Confiáveis</p>
+          <p class="mt-3 text-3xl font-semibold text-zinc-950">{{ summary.total_reliable }}</p>
+        </div>
+        <div class="rounded-lg border border-zinc-200 bg-white p-4 shadow-sm">
+          <p class="text-xs font-semibold uppercase tracking-wide text-zinc-500">Para revisar</p>
+          <p class="mt-3 text-3xl font-semibold text-zinc-950">{{ summary.total_review }}</p>
+        </div>
+        <div class="rounded-lg border border-zinc-200 bg-white p-4 shadow-sm">
+          <p class="text-xs font-semibold uppercase tracking-wide text-zinc-500">Incompletos</p>
+          <p class="mt-3 text-3xl font-semibold text-zinc-950">{{ summary.total_incomplete }}</p>
+        </div>
+        <div class="rounded-lg border border-zinc-200 bg-white p-4 shadow-sm">
+          <p class="text-xs font-semibold uppercase tracking-wide text-zinc-500">Oportunidades</p>
+          <p class="mt-3 text-3xl font-semibold text-zinc-950">{{ summary.total_opportunities }}</p>
+        </div>
+      </section>
+
+      <section class="mb-8 grid gap-4 lg:grid-cols-[1.2fr_2fr]">
+        <div class="rounded-lg border border-zinc-200 bg-white/80 p-5 shadow-sm">
+          <h2 class="text-base font-semibold text-zinc-950">Como interpretar</h2>
+          <p class="mt-2 text-sm leading-6 text-zinc-600">
+            Os dados são preservados em camadas: primeiro coletados, depois normalizados, classificados e, por fim, marcados como oportunidade quando fizer sentido.
+          </p>
+        </div>
+        <div class="rounded-lg border border-zinc-200 bg-white/80 p-5 shadow-sm">
+          <h2 class="text-base font-semibold text-zinc-950">Universo da coleta</h2>
+          <p class="mt-2 text-sm leading-6 text-zinc-600">
+            Os cards mostram o universo coletado. A tabela mostra apenas imóveis normalizados para análise comercial.
+          </p>
+          {% if summary.total_raw_without_listing %}
+            <p class="mt-4 rounded-md border border-amber-200 bg-amber-50 px-4 py-3 text-sm font-medium text-amber-950">
+              Existem {{ summary.total_raw_without_listing }} anúncios brutos ainda sem normalização. Eles estão preservados na base e não foram descartados.
+            </p>
+          {% endif %}
+        </div>
+      </section>
+
+      <section class="overflow-hidden rounded-lg border border-zinc-200 bg-white shadow-sm">
+        <div class="border-b border-zinc-200 px-5 py-5">
+          <h2 class="text-lg font-semibold text-zinc-950">Imóveis normalizados</h2>
+          <p class="mt-1 text-sm text-zinc-600">Pesquisa imobiliária com rastreabilidade para revisar confiança, origem e oportunidade.</p>
+          {% if messages %}
+            <div class="mt-4 space-y-2">
+              {% for message in messages %}
+                <p class="rounded-md border border-zinc-200 bg-zinc-50 px-3 py-2 text-sm font-medium text-zinc-800">{{ message }}</p>
+              {% endfor %}
+            </div>
+          {% endif %}
+        </div>
+        <div id="listings-table">
+          {% include "dashboard/_table.html" %}
+        </div>
+      </section>
+
+      <footer class="mt-8 border-t border-zinc-200 pt-5 text-sm text-zinc-500">
+        Jarjour Market Intelligence — dados com rastreabilidade para apoiar decisões.
+      </footer>
+    </main>
+  </body>
+</html>

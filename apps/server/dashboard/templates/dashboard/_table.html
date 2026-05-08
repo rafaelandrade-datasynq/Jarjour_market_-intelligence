@@ -1,0 +1,85 @@
+<div class="overflow-x-auto">
+  <table class="min-w-full divide-y divide-zinc-200 text-sm">
+    <thead class="bg-zinc-50 text-left text-xs font-semibold uppercase tracking-wide text-zinc-500">
+      <tr>
+        <th class="px-4 py-3">Endereço</th>
+        <th class="px-4 py-3">Bairro</th>
+        <th class="px-4 py-3">Tipo</th>
+        <th class="px-4 py-3">M²</th>
+        <th class="px-4 py-3">Aluguel</th>
+        <th class="px-4 py-3">R$/m²</th>
+        <th class="px-4 py-3">Condomínio</th>
+        <th class="px-4 py-3">Confiança</th>
+        <th class="px-4 py-3">Revisão</th>
+        <th class="px-4 py-3">Oportunidade</th>
+        <th class="px-4 py-3">Fonte</th>
+        <th class="px-4 py-3">Link</th>
+        <th class="px-4 py-3">Ações</th>
+      </tr>
+    </thead>
+    <tbody class="divide-y divide-zinc-100 bg-white">
+      {% for listing in listings %}
+        <tr class="transition hover:bg-stone-50">
+          <td class="max-w-xs px-4 py-3 font-medium text-zinc-950">{{ listing.endereco|default:"Endereço em revisão" }}</td>
+          <td class="px-4 py-3 text-zinc-700">{{ listing.bairro|default:"-" }}</td>
+          <td class="px-4 py-3 text-zinc-700">{{ listing.tipo_imovel|default:"-" }}</td>
+          <td class="px-4 py-3 text-zinc-700">{{ listing.area_m2|default:"-" }}</td>
+          <td class="px-4 py-3 text-zinc-700">{{ listing.aluguel|default:"-" }}</td>
+          <td class="px-4 py-3 text-zinc-700">{{ listing.aluguel_m2|floatformat:2|default:"-" }}</td>
+          <td class="px-4 py-3 text-zinc-700">{{ listing.condominio|default:"-" }}</td>
+          <td class="px-4 py-3">
+            <span class="inline-flex rounded-md border border-zinc-200 bg-zinc-50 px-2.5 py-1 text-xs font-semibold text-zinc-700">{{ listing.get_confidence_status_display }}</span>
+          </td>
+          <td class="px-4 py-3">
+            <span class="inline-flex rounded-md border border-zinc-200 bg-white px-2.5 py-1 text-xs font-semibold text-zinc-700">{{ listing.get_review_status_display }}</span>
+          </td>
+          <td class="px-4 py-3">
+            {% if listing.is_opportunity %}
+              <span class="inline-flex rounded-md border border-amber-200 bg-amber-50 px-2.5 py-1 text-xs font-semibold text-amber-900">Oportunidade</span>
+            {% else %}
+              <span class="text-zinc-400">-</span>
+            {% endif %}
+          </td>
+          <td class="px-4 py-3 text-zinc-700">{{ listing.source_name|default:"-" }}</td>
+          <td class="px-4 py-3">
+            {% if listing.source_url %}
+              <a class="font-semibold text-amber-700 underline underline-offset-4 hover:text-amber-900" href="{{ listing.source_url }}">Abrir</a>
+            {% else %}
+              <span class="text-zinc-400">-</span>
+            {% endif %}
+          </td>
+          <td class="min-w-64 px-4 py-3">
+            <div class="flex flex-wrap gap-2">
+              <form method="post" action="{% url 'dashboard:review-listing' listing.id %}">
+                {% csrf_token %}
+                <input type="hidden" name="decision" value="APPROVED">
+                <button class="rounded-md border border-zinc-300 bg-white px-2.5 py-1 text-xs font-semibold text-zinc-700 hover:bg-zinc-50" type="submit">Aprovar</button>
+              </form>
+              <form method="post" action="{% url 'dashboard:review-listing' listing.id %}">
+                {% csrf_token %}
+                <input type="hidden" name="decision" value="NEEDS_REVIEW">
+                <button class="rounded-md border border-zinc-300 bg-white px-2.5 py-1 text-xs font-semibold text-zinc-700 hover:bg-zinc-50" type="submit">Marcar para revisão</button>
+              </form>
+              <form method="post" action="{% url 'dashboard:review-listing' listing.id %}">
+                {% csrf_token %}
+                <input type="hidden" name="decision" value="REJECTED">
+                <button class="rounded-md border border-zinc-300 bg-white px-2.5 py-1 text-xs font-semibold text-zinc-700 hover:bg-zinc-50" type="submit">Rejeitar</button>
+              </form>
+              <form method="post" action="{% url 'dashboard:review-listing' listing.id %}">
+                {% csrf_token %}
+                <input type="hidden" name="decision" value="OPPORTUNITY">
+                <button class="rounded-md border border-amber-200 bg-amber-50 px-2.5 py-1 text-xs font-semibold text-amber-900 hover:bg-amber-100" type="submit">Marcar como oportunidade</button>
+              </form>
+            </div>
+          </td>
+        </tr>
+      {% empty %}
+        <tr>
+          <td class="px-4 py-10 text-center text-sm text-zinc-500" colspan="13">
+            Não há imóveis normalizados para este filtro. Os anúncios brutos, quando existirem, continuam preservados na base.
+          </td>
+        </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
